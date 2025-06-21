@@ -18,6 +18,23 @@ services:
     networks:
       - alertora-network
 
+  user-preference-service:
+    build:
+      context: ./services/user-preference-service
+    container_name: user-preference-service
+    depends_on:
+      - redis
+      - mongodb
+    environment:
+      - FLASK_ENV=development
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - MONGO_URI=mongodb://mongodb:27017
+    ports:
+      - "8001:8001"
+    networks:
+      - alertora-network
+
   redis:
     image: redis:7-alpine
     container_name: redis
