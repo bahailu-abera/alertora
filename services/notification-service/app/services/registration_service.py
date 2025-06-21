@@ -1,8 +1,9 @@
 import uuid
 import secrets
-from app.extensions import mongo_database
 from app.models.client_model import ClientModel
 from app.utils.redis_utils import cache_auth_token
+from app.utils.mongodb_utils import insert_client_document
+from app.validators.registration_validator import validate_registration_payload
 
 
 def generate_token():
@@ -10,11 +11,12 @@ def generate_token():
 
 
 def register_client(data):
-    service_name = data.get("service_name")
-    notification_types = data.get("notification_types", [])
+    is_valid, error = validate_registration_payload(data)
+    if not is_valid:
+        return {"error": error}, 400
 
-    if not service_name or not isinstance(notification_types, list):
-        return {"error": "Invalid input"}, 400
+    service_name = data["service_name"]
+    notification_types = data["notification_types"]
 
     client_id = str(uuid.uuid4())
     api_token = generate_token()
@@ -25,11 +27,8 @@ def register_client(data):
             api_token=api_token,
             notification_types=notification_types
         )
-
-    mongo_database.clients.insert_one(
-       client.to_dict()
-    )
-
+    
+    insert_client_document(client.to_dict())
     cache_auth_token(api_token, client_id)
 
     return {

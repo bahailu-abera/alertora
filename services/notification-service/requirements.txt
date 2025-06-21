@@ -2,7 +2,7 @@ flask==3.1.1
 flask-cors==6.0.0
 pymongo==4.7.2
 flask_pymongo==3.0.1
-redis==6.0
+flask_redis==0.4
 kafka-python==2.0.2
 requests==2.32
 python-dotenv==1.0.1
