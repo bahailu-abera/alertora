@@ -1,4 +1,4 @@
-# Alertora Notification Delivery System
+#  Alertora Notification Delivery System
 
 **Alertora** is a distributed, scalable notification delivery system that enables applications to send real-time alerts via **Email**, **SMS**, and **Push** channels. It respects user preferences and supports retries, delivery logging, and multi-channel queuing.
 
@@ -28,7 +28,7 @@ Alertora is designed to be:
                          +--------------------------+
                          | Notification Service     |
                          | - Auth & validation      |
-                         | - User preference check  |
+                         | - User preference check  |                
                          | - Kafka enqueue          |
                          +--------------------------+
                                      |
@@ -104,7 +104,10 @@ Register a new client application.
 ```json
 {
   "service_name": "MyApp",
-  "notification_types": ["promo", "security_alert"]
+  "notification_types": [
+    {"name": "promo", "description": "Promotional offers"},
+    {"name": "security_alert", "description": "Security-related notifications"}
+]
 }
 ```
 
@@ -185,10 +188,12 @@ docker-compose up --build
 
 ```bash
 # Register a client
-curl -X POST http://localhost:5000/register   -H "Content-Type: application/json"   -d '{"service_name": "MyApp", "notification_types": ["promo"]}'
+curl -X POST http://localhost:5000/api/v1/register   -H "Content-Type: application/json"   -d '{"service_name": "MyApp", "notification_types": [
+    {"name": "promo", "description": "Promotional offers"}
+]}'
 
 # Use the returned api_token to send a message
-curl -X POST http://localhost:5000/notify   -H "Authorization: Bearer <api_token>"   -H "Content-Type: application/json"   -d '{
+curl -X POST http://localhost:5000/api/v1/notify   -H "Authorization: Bearer <api_token>"   -H "Content-Type: application/json"   -d '{
     "recipient_id": "user@example.com",
     "notification_type": "promo",
     "channel": "email",
@@ -213,7 +218,3 @@ services/
 
 ---
 
-## 🧑‍💻 Maintainers
-
-
----
