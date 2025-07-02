@@ -185,10 +185,10 @@ docker-compose up --build
 
 ```bash
 # Register a client
-curl -X POST http://localhost:8000/register   -H "Content-Type: application/json"   -d '{"service_name": "MyApp", "notification_types": ["promo"]}'
+curl -X POST http://localhost:5000/register   -H "Content-Type: application/json"   -d '{"service_name": "MyApp", "notification_types": ["promo"]}'
 
 # Use the returned api_token to send a message
-curl -X POST http://localhost:8000/notify   -H "Authorization: Bearer <api_token>"   -H "Content-Type: application/json"   -d '{
+curl -X POST http://localhost:5000/notify   -H "Authorization: Bearer <api_token>"   -H "Content-Type: application/json"   -d '{
     "recipient_id": "user@example.com",
     "notification_type": "promo",
     "channel": "email",
