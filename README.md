@@ -213,18 +213,7 @@ services/
 
 ---
 
-## 📌 Planned Features
-
-- Retry dashboards
-- Admin portal for clients
-- Fallback delivery providers
-- Template-based messaging
-
----
-
 ## 🧑‍💻 Maintainers
 
-**Alertora Team**  
-Email: alertora@yourdomain.com
 
 ---
