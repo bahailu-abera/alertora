@@ -38,12 +38,16 @@ def process_notification(data, token):
         return {"error": f"Preference service error: {str(e)}"}, 500
 
     message = {
-        "client_id": client_id,
-        "user_id": data["recipient_id"],
-        "notification_type": data["notification_type"],
-        "channel": data["channel"],
-        "content": data["content"]
+        k: (v.decode("utf-8") if isinstance(v, bytes) else v)
+        for k, v in {
+            "client_id": client_id,
+            "user_id": data["recipient_id"],
+            "notification_type": data["notification_type"],
+            "channel": data["channel"],
+            "content": data["content"]
+        }.items()
     }
+
 
     topic = f"{data['channel']}_notifications"
     send_to_kafka(topic, message)
