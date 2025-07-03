@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Update Preferences</title>
+</head>
+<body>
+  <h2>Set Your Notification Preferences</h2>
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <ul>{% for message in messages %}<li>{{ message }}</li>{% endfor %}</ul>
+    {% endif %}
+  {% endwith %}
+
+  <form method="POST">
+    <input type="hidden" name="token" value="{{ token }}" />
+
+    <label>Channels:</label><br/>
+    <input type="checkbox" name="channels" value="email"> Email<br/>
+    <input type="checkbox" name="channels" value="sms"> SMS<br/>
+    <input type="checkbox" name="channels" value="push"> Push<br/>
+
+    <br/>
+
+    <label>Allowed Types:</label><br/>
+    <input type="checkbox" name="allowed_types" value="promo"> Promo<br/>
+    <input type="checkbox" name="allowed_types" value="security_alert"> Security Alert<br/>
+    <input type="checkbox" name="allowed_types" value="reminder"> Reminder<br/>
+
+    <br/>
+    <button type="submit">Update Preferences</button>
+  </form>
+</body>
+</html>

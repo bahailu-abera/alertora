@@ -3,3 +3,4 @@ flask-cors==6.0.0
 flask_pymongo==3.0.1
 flask_redis==0.4
 python-dotenv==1.0.1
+PyJWT>=2.8.0

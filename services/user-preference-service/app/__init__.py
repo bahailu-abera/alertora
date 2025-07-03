@@ -20,8 +20,11 @@ def create_app():
 
     from app.api.v1.routes.get_preference import preference_get_bp
     from app.api.v1.routes.update_preference import preference_update_bp
+    from app.web.routes.preference_page import web_bp
 
     app.register_blueprint(preference_get_bp, url_prefix='/api/v1/preferences')
     app.register_blueprint(preference_update_bp, url_prefix='/api/v1/preferences')
+    app.register_blueprint(web_bp)
+
 
     return app
