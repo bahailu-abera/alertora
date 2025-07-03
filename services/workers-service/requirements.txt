@@ -1,0 +1,7 @@
+psycopg2-binary==2.9.9
+kafka-python==2.0.2
+SQLAlchemy==2.0.30
+psycopg2-binary==2.9.9
+sendgrid==6.11.0
+celery[redis]==5.3.6
+PyJWT>=2.8.0
