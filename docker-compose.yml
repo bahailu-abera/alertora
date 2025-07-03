@@ -1,4 +1,39 @@
 services:
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/certs:/etc/letsencrypt
+      - ./nginx/certbot/www:/var/www/certbot
+      - ./nginx/init.sh:/init.sh
+    command: /bin/sh -c "sleep 15 && sh /init.sh"
+    environment:
+      - DOMAIN=${DOMAIN}
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - notification-service
+      - user-preference-service
+    networks:
+      - alertora-network
+
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - ./nginx/certs:/etc/letsencrypt
+      - ./nginx/certbot/www:/var/www/certbot
+      - ./nginx/certbot-init.sh:/certbot-init.sh
+    entrypoint: ["/bin/sh", "/certbot-init.sh"]
+    environment:
+      - DOMAIN=${DOMAIN}
+      - EMAIL=${EMAIL}
+    depends_on:
+      - nginx
+    networks:
+      - alertora-network
+
   notification-service:
     build:
       context: ./services/notification-service
@@ -30,11 +65,95 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - MONGO_URI=mongodb://mongodb:27017
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
     ports:
       - "8001:8001"
     networks:
       - alertora-network
 
+  # ---------- WORKERS ----------
+  email-worker:
+    build:
+      context: ./services/workers-service
+    command: ["sh", "-c", "sleep 15 && python run.py email"]
+    depends_on:
+      - kafka
+      - postgres
+    environment:
+      - SENDGRID_API_KEY=${SENDGRID_API_KEY}
+      - GMAIL_ADDRESS=${GMAIL_ADDRESS}
+      - GMAIL_APP_PASSWORD=${GMAIL_APP_PASSWORD}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+    networks:
+      - alertora-network
+
+  sms-worker:
+    build:
+      context: ./services/workers-service
+    command: ["sh", "-c", "sleep 15 && python run.py sms"]
+    depends_on:
+      - kafka
+      - postgres
+    environment:
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+    networks:
+      - alertora-network
+
+  push-android-worker:
+    build:
+      context: ./services/workers-service
+    command: ["sh", "-c", "sleep 15 && python run.py push_android"]
+    depends_on:
+      - kafka
+      - postgres
+    environment:
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+    networks:
+      - alertora-network
+
+  push-ios-worker:
+    build:
+      context: ./services/workers-service
+    command: ["sh", "-c", "sleep 15 && python run.py push_ios"]
+    depends_on:
+      - kafka
+      - postgres
+    environment:
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+    networks:
+      - alertora-network
+
+  # ---------- CELERY RETRY WORKER ----------
+  retry-worker:
+    build:
+      context: ./services/workers-service
+    command: ["celery", "--app", "app.celery_app", "worker", "--loglevel=info", "--concurrency=1"]
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis:6379/1
+      - MAX_RETRIES=3
+    networks:
+      - alertora-network
+    depends_on:
+      - redis
+      - postgres
+
+  celery-beat:
+    build:
+      context: ./services/workers-service
+    command: ["celery", "--app", "app.celery_app", "beat", "--loglevel=info"]
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis:6379/1
+      - MAX_RETRIES=3
+    depends_on:
+      - redis
+      - retry-worker
+    networks:
+      - alertora-network
+
+
+  # ---------- REDIS ----------
   redis:
     image: redis:7-alpine
     container_name: redis
@@ -43,6 +162,20 @@ services:
     networks:
       - alertora-network
 
+  # ---------- POSTGRES ----------
+  postgres:
+    image: postgres:14
+    container_name: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: alertora
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    networks:
+      - alertora-network
+
+  # ---------- MONGODB ----------
   mongodb:
     image: mongo:6
     container_name: mongodb
@@ -53,6 +186,7 @@ services:
     networks:
       - alertora-network
 
+  # ---------- KAFKA ----------
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.0
     container_name: zookeeper
@@ -85,6 +219,7 @@ volumes:
   mongo_data:
   zookeeper_data:
   kafka_data:
+  pg_data:
 
 networks:
   alertora-network:
