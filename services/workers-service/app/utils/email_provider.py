@@ -5,7 +5,7 @@ from app.utils.jwt_utils import generate_preference_update_token
 SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
 GMAIL_ADDRESS = os.getenv("GMAIL_ADDRESS")
 GMAIL_APP_PASSWORD = os.getenv("GMAIL_APP_PASSWORD")
-PREFERENCE_URL_BASE = os.getenv("PREFERENCE_UPDATE_URL", "https://alertora.com/preferences")
+PREFERENCE_URL_BASE = os.getenv("PREFERENCE_UPDATE_URL", "http://localhost/preferences")
 
 
 def _append_preference_link(content: str, user_id: str, client_id: str) -> str:
