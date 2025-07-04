@@ -22,8 +22,5 @@ certbot certonly --webroot -w /var/www/certbot \
   -d "$DOMAIN" \
   --force-renewal
 
-# Reload Nginx to apply certs
-echo "[INFO] Reloading nginx..."
-docker exec nginx nginx -s reload
 
 echo "[INFO] Certificate for $DOMAIN has been applied!"
