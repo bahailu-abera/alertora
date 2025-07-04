@@ -8,7 +8,7 @@ from app.utils.push_provider import send_push_ios, send_push_android
 import os
 
 
-MAX_RETRIES = int(os.getenv("MAX_RETRIES", 3))
+MAX_RETRIES = int(os.getenv("MAX_RETRIES", 5))
 
 
 @celery_app.task(name="app.celery_app.tasks.retry.retry_failed_notifications")

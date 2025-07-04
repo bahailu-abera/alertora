@@ -3,7 +3,7 @@ from datetime import timedelta
 from celery.schedules import schedule
 
 
-retry_interval_seconds = int(os.getenv("RETRY_INTERVAL_SECONDS", 30))
+retry_interval_seconds = int(os.getenv("RETRY_INTERVAL_SECONDS", 60))
 
 
 beat_schedule = {
