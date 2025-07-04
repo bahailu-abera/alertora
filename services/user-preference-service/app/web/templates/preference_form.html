@@ -5,30 +5,34 @@
 </head>
 <body>
   <h2>Set Your Notification Preferences</h2>
+
   {% with messages = get_flashed_messages() %}
     {% if messages %}
       <ul>{% for message in messages %}<li>{{ message }}</li>{% endfor %}</ul>
     {% endif %}
   {% endwith %}
 
-  <form method="POST">
-    <input type="hidden" name="token" value="{{ token }}" />
+  {% if token %}
+    <form method="POST">
+      <input type="hidden" name="token" value="{{ token }}" />
 
-    <label>Channels:</label><br/>
-    <input type="checkbox" name="channels" value="email"> Email<br/>
-    <input type="checkbox" name="channels" value="sms"> SMS<br/>
-    <input type="checkbox" name="channels" value="push_android"> Push (Android)<br/>
-    <input type="checkbox" name="channels" value="push_ios"> Push (iOS)<br/>
+      <label>Channels:</label><br/>
+      {% for channel in channels %}
+        <input type="checkbox" name="channels" value="{{ channel }}"> {{ channel|capitalize }}<br/>
+      {% endfor %}
 
-    <br/>
+      <br/>
 
-    <label>Allowed Types:</label><br/>
-    <input type="checkbox" name="allowed_types" value="promo"> Promo<br/>
-    <input type="checkbox" name="allowed_types" value="security_alert"> Security Alert<br/>
-    <input type="checkbox" name="allowed_types" value="reminder"> Reminder<br/>
+      <label>Allowed Types:</label><br/>
+      {% for type in types %}
+        <input type="checkbox" name="allowed_types" value="{{ type }}"> {{ type.replace('_', ' ')|capitalize }}<br/>
+      {% endfor %}
 
-    <br/>
-    <button type="submit">Update Preferences</button>
-  </form>
+      <br/>
+      <button type="submit">Update Preferences</button>
+    </form>
+  {% else %}
+    <p>Invalid or missing token. Please try again.</p>
+  {% endif %}
 </body>
 </html>
