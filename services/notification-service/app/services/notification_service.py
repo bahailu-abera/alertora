@@ -19,9 +19,9 @@ def process_notification(data, token):
     try:
         # Query user preference service
         resp = requests.get(
-            f"{Config.USER_PREF_SERVICE_URL}/{data['recipient_id']}",
-            params={"client_id": client_id}
-        )
+            Config.USER_PREF_SERVICE_URL,
+            params={"user_id": data["recipient_id"], "client_id": client_id}
+            )
 
         if resp.status_code == 404:
             # No preferences set — send by default
