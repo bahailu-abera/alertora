@@ -17,4 +17,4 @@ COPY . .
 EXPOSE 8001
 
 # Run the service
-CMD ["python", "run.py"]
+CMD ["python",  "-u", "run.py"]

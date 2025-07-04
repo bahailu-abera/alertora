@@ -2,17 +2,17 @@ from flask import Flask
 from flask_pymongo import PyMongo
 from flask_redis import FlaskRedis
 from .config import Config
-import logging
+import os
 
 
 def create_app():
-    app = Flask(__name__)
-    app.config.from_object(Config)
+    base_dir = os.path.abspath(os.path.dirname(__file__))
+    templates_dir = os.path.join(base_dir, 'web', 'templates')
+    static_dir = os.path.join(base_dir, 'web', 'static')
 
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    )
+    app = Flask(__name__, template_folder=templates_dir, static_folder=static_dir)
+
+    app.config.from_object(Config)
 
     from app import extensions
     extensions.mongo_database = PyMongo(app).cx['alertora']
@@ -22,8 +22,8 @@ def create_app():
     from app.api.v1.routes.update_preference import preference_update_bp
     from app.web.routes.preference_page import web_bp
 
-    app.register_blueprint(preference_get_bp, url_prefix='/api/v1/preferences')
-    app.register_blueprint(preference_update_bp, url_prefix='/api/v1/preferences')
+    app.register_blueprint(preference_get_bp, url_prefix='/api/v1')
+    app.register_blueprint(preference_update_bp, url_prefix='/api/v1')
     app.register_blueprint(web_bp)
 
 

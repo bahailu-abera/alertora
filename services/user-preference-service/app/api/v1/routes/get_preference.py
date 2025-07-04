@@ -13,6 +13,6 @@ def get_preference():
     if not user_id or not client_id:
         return jsonify({"error": "Missing user_id or client_id"}), 400
 
-    result, status_code = get_user_preference(client_id, user_id)
+    result, status_code = get_user_preference(user_id=user_id, client_id=client_id)
 
     return jsonify(result), status_code

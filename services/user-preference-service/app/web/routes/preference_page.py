@@ -1,5 +1,5 @@
 from flask import Blueprint, request, render_template, redirect, url_for, flash
-from app.utils.jwt_utils import decode_preference_token
+from app.utils.jwt_utils import decode_user_pref_token
 from app.services.preference_update_service import update_user_preference
 
 
@@ -13,7 +13,7 @@ def preference_page():
         return "Missing token", 400
 
     try:
-        payload = decode_preference_token(token)
+        payload = decode_user_pref_token(token)
         user_id = payload["sub"]
         client_id = payload["client_id"]
     except Exception:
