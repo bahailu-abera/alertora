@@ -4,7 +4,9 @@
 
 ---
 
-🎥 **Project Demo:** [Watch the demo here](https://www.awesomescreenshot.com/video/41692293?key=24aa6ec597f55358125c85e7e8575927)
+🎥 **Project Demo:** [Watch the demo here](https://www.awesomescreenshot.com/video/41692293?key=24aa6ec597f55358125c85e7e8575927)  
+🚀 **Deployed URL:** [https://api.alertora.addisalem.xyz](https://api.alertora.addisalem.xyz)
+
 ---
 
 ## 🧭 Project Overview
@@ -18,39 +20,14 @@ Alertora is designed to be:
 
 ---
 
-## 🏗️ Architecture Overview
+## 🏗️ Architecture Overview (Data Flow)
 
-```
-                         +--------------------------+
-                         |      Client App          |
-                         +--------------------------+
-                                     |
-                                     v
-                            [ POST /notify ]
-                                     |
-                         +--------------------------+
-                         | Notification Service     |
-                         | - Auth & validation      |
-                         | - User preference check  |                
-                         | - Kafka enqueue          |
-                         +--------------------------+
-                                     |
-                 +------------------------------------------+
-                 |          Kafka Notification Topics       |
-                 |    (email_notifications, sms_notifications)|
-                 +------------------------------------------+
-                        |                  |              |
-                        v                  v              v
-           +------------------+  +------------------+  +------------------+
-           | Email Worker     |  | SMS Worker       |  | Push Worker      |
-           | - SendGrid/Gmail |  | - Twilio         |  | - FCM/APNs       |
-           +------------------+  +------------------+  +------------------+
-                        |
-                        v
-              +----------------------+
-              | PostgreSQL Logging   |
-              +----------------------+
-```
+1. Client sends request to `POST /notify` on the **Notification Service**.
+2. Notification Service performs auth, validates request, checks preferences.
+3. Message is published to the appropriate **Kafka topic** (email/sms/push).
+4. A **Worker** consumes the message and sends it using the selected provider.
+5. Result (success/failure) is logged in **PostgreSQL**.
+6. Retries are handled by periodic **Celery tasks**.
 
 ---
 
@@ -110,7 +87,7 @@ Register a new client application.
   "notification_types": [
     {"name": "promo", "description": "Promotional offers"},
     {"name": "security_alert", "description": "Security-related notifications"}
-]
+  ]
 }
 ```
 
@@ -171,12 +148,45 @@ Content-Type: application/json
 ### 📁 Prerequisites
 
 - Docker & Docker Compose
-- `.env` file with:
+- `.env` file with the following:
 
 ```env
-EMAIL_PROVIDER=gmail
-GMAIL_ADDRESS=yourname@gmail.com
-GMAIL_APP_PASSWORD=your_app_password
+BASE_URL=https://alertora.example.xyz
+
+DOMAIN=api.alertora.example.xyz prefs.alertora.example.xyz
+EMAIL=your_email@example.com
+PREFERENCE_UPDATE_URL=https://prefs.alertora.example.xyz/preferences
+
+GMAIL_ADDRESS=your_email_username
+
+# Redis
+REDIS_HOST=redis
+REDIS_PORT=6379
+
+# MongoDB
+MONGO_URI=mongodb://mongodb:27017
+
+# Kafka
+KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+
+# JWT
+JWT_SECRET_KEY=your_very_secret_jwt_key
+
+# Email Providers
+SENDGRID_API_KEY=your-sendgrid-api-key
+MAIL_ADDRESS=your_email@example.com
+GMAIL_APP_PASSWORD=your_gmail_app_password
+
+# Celery Retry
+MAX_RETRIES=5
+CELERY_BROKER_URL=redis://redis:6379/1
+CELERY_RESULT_BACKEND=redis://redis:6379/1
+RETRY_INTERVAL_SECONDS=90
+
+# PostgreSQL
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+POSTGRES_DB=alertora
 ```
 
 ### ▶️ Start the System
@@ -191,17 +201,22 @@ docker-compose up --build
 
 ```bash
 # Register a client
-curl -X POST http://localhost:5000/api/v1/register   -H "Content-Type: application/json"   -d '{"service_name": "MyApp", "notification_types": [
-    {"name": "promo", "description": "Promotional offers"}
-]}'
+curl -X POST https://api.alertora.example.xyz/api/v1/register   -H "Content-Type: application/json"   -d '{
+        "service_name": "company_b",
+       "notification_types": [
+          {"name": "reminder", "description": "Reminders for tasks and events"},
+          {"name": "feature_release", "description": "New feature announcements"},
+          {"name": "promo", "description": "Sales and marketing messages"}
+        ]
+      }'
 
-# Use the returned api_token to send a message
-curl -X POST http://localhost:5000/api/v1/notify   -H "Authorization: Bearer <api_token>"   -H "Content-Type: application/json"   -d '{
-    "recipient_id": "user@example.com",
-    "notification_type": "promo",
-    "channel": "email",
-    "content": "This is a test email from Alertora"
-}'
+# Send notification
+curl  -X POST https://api.alertora.example.xyz/api/v1/notify   -H "Authorization: Bearer <api_token>"   -H "Content-Type: application/json"   -d '{
+        "recipient_id": "hello@example.com",
+        "notification_type": "feature_release",
+        "channel": "email",
+        "content": "🚀 New feature: Dark mode is now available!"
+      }'
 ```
 
 ---
@@ -220,4 +235,3 @@ services/
 - MongoDB stores client & user settings
 
 ---
-
