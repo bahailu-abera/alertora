@@ -4,14 +4,35 @@ services:
     container_name: nginx
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./certs:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+      - ./nginx/init.sh:/init.sh
+    environment:
+      - DOMAIN=${DOMAIN}
+    entrypoint: ["/bin/sh", "/init.sh"]
     ports:
       - "80:80"
+      - "443:443"
     depends_on:
       - notification-service
       - user-preference-service
     networks:
       - alertora-network
-
+  certbot:
+    image: certbot/certbot
+    container_name: certbot
+    volumes:
+      - ./certs:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+      - ./nginx/certbot-init.sh:/certbot-init.sh
+    environment:
+      - DOMAIN=${DOMAIN}
+      - EMAIL=${EMAIL}
+    entrypoint: ["/bin/sh", "/certbot-init.sh"]
+    depends_on:
+      - nginx
+    networks:
+      - alertora-network
 
   notification-service:
     build:
@@ -27,8 +48,6 @@ services:
       - REDIS_PORT=${REDIS_PORT}
       - MONGO_URI=${MONGO_URI}
       - KAFKA_BOOTSTRAP_SERVERS=${KAFKA_BOOTSTRAP_SERVERS}
-    ports:
-      - "5000:5000"
     networks:
       - alertora-network
 
@@ -45,8 +64,6 @@ services:
       - REDIS_PORT=${REDIS_PORT}
       - MONGO_URI=${MONGO_URI}
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}
-    ports:
-      - "8001:8001"
     networks:
       - alertora-network
 
@@ -63,7 +80,7 @@ services:
       - GMAIL_ADDRESS=${GMAIL_ADDRESS}
       - GMAIL_APP_PASSWORD=${GMAIL_APP_PASSWORD}
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}
-      - PREFERENCE_URL_BASE=${PREFERENCE_URL_BASE}
+      - PREFERENCE_UPDATE_URL=${PREFERENCE_UPDATE_URL}
 
     networks:
       - alertora-network
@@ -204,6 +221,8 @@ volumes:
   zookeeper_data:
   kafka_data:
   pg_data:
+  certs:
+  certbot-www:
 
 networks:
   alertora-network:
