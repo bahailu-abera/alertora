@@ -134,7 +134,7 @@ services:
       - GMAIL_ADDRESS=${GMAIL_ADDRESS}
       - GMAIL_APP_PASSWORD=${GMAIL_APP_PASSWORD}
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}
-      - PREFERENCE_URL_BASE=${PREFERENCE_URL_BASE}
+      - PREFERENCE_UPDATE_URL=${PREFERENCE_UPDATE_URL}
     networks:
       - alertora-network
     depends_on:
