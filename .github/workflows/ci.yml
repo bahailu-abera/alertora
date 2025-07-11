@@ -62,4 +62,5 @@ jobs:
 
       - name: Run Safety (check for known vulnerabilities)
         run: |
+          safety auth --key ${{ secrets.SAFETY_API_KEY }}
           safety scan --full-report
