@@ -62,4 +62,4 @@ jobs:
 
       - name: Run Safety (check for known vulnerabilities)
         run: |
-          safety check --full-report
+          safety scan --full-report
