@@ -4,5 +4,5 @@ pymongo==4.7.2
 flask_pymongo==3.0.1
 flask_redis==0.4
 kafka-python==2.0.2
-requests==2.32
+requests==2.32.2
 python-dotenv==1.0.1
