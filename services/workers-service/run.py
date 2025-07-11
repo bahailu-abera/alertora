@@ -1,6 +1,10 @@
 import sys
-from app.consumers import email_worker, sms_worker,\
-    push_android_worker, push_ios_worker
+from app.consumers import (
+    email_worker,
+    sms_worker,
+    push_android_worker,
+    push_ios_worker,
+)
 from sqlalchemy.exc import IntegrityError, ProgrammingError
 
 from app.extensions import Base, engine
@@ -10,7 +14,7 @@ WORKER_MAP = {
     "email": email_worker.run,
     "sms": sms_worker.run,
     "push_android": push_android_worker.run,
-    "push_ios": push_ios_worker.run
+    "push_ios": push_ios_worker.run,
 }
 
 

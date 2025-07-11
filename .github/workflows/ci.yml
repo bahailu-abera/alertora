@@ -1,0 +1,67 @@
+name: CI Validation
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - release/*
+      - feature/*
+      - hotfix/*
+  pull_request:
+    branches:
+      - main
+      - develop
+      - release/*
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Install dependencies
+        run: |
+          pip install -r services/notification-service/requirements.txt
+          pip install -r services/user-preference-service/requirements.txt
+          pip install -r services/workers-service/requirements.txt
+          pip install flake8 black bandit pytest pytest-cov safety
+
+      - name: Run Flake8
+        run: flake8 services/
+
+      - name: Run Bandit (security linter)
+        run: bandit -r services/
+
+      - name: Run Notification Service Tests
+        run: |
+          pytest \
+            --cov=services/notification-service/app \
+            --cov-report=term \
+            services/notification-service/tests
+
+      - name: Run User Preference Service Tests
+        run: |
+          pytest \
+            --cov=services/user-preference-service/app \
+            --cov-report=term \
+            services/user-preference-service/tests
+
+      - name: Run Workers Service Tests
+        run: |
+          pytest \
+            --cov=services/workers-service/app \
+            --cov-report=term \
+            services/workers-service/tests
+
+      - name: Run Safety (check for known vulnerabilities)
+        env:
+            SAFETY_API_KEY: ${{ secrets.SAFETY_API_KEY }}
+        run: |
+            safety scan --full-report

@@ -12,7 +12,9 @@ def rate_limit(limit: int, window: int = 60):
     def decorator(f):
         @wraps(f)
         def wrapper(*args, **kwargs):
-            token = request.headers.get("Authorization", "").replace("Bearer ", "")
+            token = request.headers.get("Authorization", "").replace(
+                "Bearer ", ""
+            )
             if not token:
                 return jsonify({"error": "Missing token"}), 401
 
@@ -28,6 +30,7 @@ def rate_limit(limit: int, window: int = 60):
                 redis_client.set(key, 1, ex=window)
 
             return f(*args, **kwargs)
+
         return wrapper
 
     return decorator

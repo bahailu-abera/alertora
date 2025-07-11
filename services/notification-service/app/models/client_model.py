@@ -15,7 +15,7 @@ class ClientModel:
             "service_name": self.service_name,
             "api_token": self.api_token,
             "notification_types": self.notification_types,
-            "created_at": self.created_at
+            "created_at": self.created_at,
         }
 
     @staticmethod
@@ -24,5 +24,5 @@ class ClientModel:
             service_name=data.get("service_name"),
             api_token=data.get("api_token"),
             notification_types=data.get("notification_types", []),
-            client_id=data.get("client_id")
+            client_id=data.get("client_id"),
         )

@@ -20,8 +20,9 @@ def process_notification(data, token):
         # Query user preference service
         resp = requests.get(
             Config.USER_PREF_SERVICE_URL,
-            params={"user_id": data["recipient_id"], "client_id": client_id}
-            )
+            params={"user_id": data["recipient_id"], "client_id": client_id},
+            timeout=5,
+        )
 
         if resp.status_code == 404:
             # No preferences set — send by default
@@ -30,8 +31,9 @@ def process_notification(data, token):
             return {"error": "Failed to fetch user preferences"}, 502
         else:
             prefs = resp.json().get("preferences", {})
-            if data["channel"] not in prefs.get("channels", []) or \
-               data["notification_type"] not in prefs.get("allowed_types", []):
+            if data["channel"] not in prefs.get("channels", []) or data[
+                "notification_type"
+            ] not in prefs.get("allowed_types", []):
                 return {"error": "User preference rejected"}, 403
 
     except Exception as e:
@@ -44,10 +46,9 @@ def process_notification(data, token):
             "user_id": data["recipient_id"],
             "notification_type": data["notification_type"],
             "channel": data["channel"],
-            "content": data["content"]
+            "content": data["content"],
         }.items()
     }
-
 
     topic = f"{data['channel']}_notifications"
     send_to_kafka(topic, message)

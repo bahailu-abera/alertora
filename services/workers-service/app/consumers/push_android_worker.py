@@ -6,5 +6,5 @@ def run():
     consume_kafka_topic(
         topic="push_android_notifications",
         group_id="push_android_worker_group",
-        handler_func=handle_push_android_message
+        handler_func=handle_push_android_message,
     )

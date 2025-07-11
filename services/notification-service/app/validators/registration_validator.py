@@ -10,7 +10,8 @@ def validate_registration_payload(data):
         return False, "Missing service_name"
 
     if not isinstance(notification_types, list) or not all(
-        isinstance(t, dict) and "name" in t and "description" in t for t in notification_types
+        isinstance(t, dict) and "name" in t and "description" in t
+        for t in notification_types
     ):
         return False, "Invalid or missing notification_types"
 

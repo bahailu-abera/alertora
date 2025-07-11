@@ -1,0 +1,27 @@
+version: 0.0
+os: linux
+
+files:
+  - source: /
+    destination: /home/epic-user/realtime-backend/alertora
+    overwrite: yes
+
+file_exists_behavior: OVERWRITE
+
+permissions:
+  - object: /home/epic-user/realtime-backend/alertora/scripts
+    pattern: "**"
+    owner: epic-user
+    group: epic-user
+    mode: 755
+
+hooks:
+  BeforeInstall:
+    - location: scripts/stop_application.sh
+      timeout: 300
+      runas: epic-user
+
+  ApplicationStart:
+    - location: scripts/start_application.sh
+      timeout: 300
+      runas: epic-user
