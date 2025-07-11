@@ -21,6 +21,7 @@ def process_notification(data, token):
         resp = requests.get(
             Config.USER_PREF_SERVICE_URL,
             params={"user_id": data["recipient_id"], "client_id": client_id},
+            timeout=5 
         )
 
         if resp.status_code == 404:
