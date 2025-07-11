@@ -4,6 +4,9 @@ import json
 import time
 
 
+_producer = None
+
+
 def create_producer():
     retries = 5
     delay = 5
@@ -21,9 +24,14 @@ def create_producer():
             time.sleep(delay)
 
 
-producer = create_producer()
+def get_producer():
+    global _producer
+    if _producer is None:
+        _producer = create_producer()
+    return _producer
 
 
 def send_to_kafka(topic, message):
-    producer.send(topic, message)
+    producer = get_producer()
+    producer.send(topic, value=message)
     producer.flush()
