@@ -18,18 +18,48 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
           python-version: 3.11
-      - run: |
+
+      - name: Install dependencies
+        run: |
           pip install -r services/notification-service/requirements.txt
           pip install -r services/user-preference-service/requirements.txt
           pip install -r services/workers-service/requirements.txt
           pip install flake8 black bandit pytest pytest-cov safety
-      - run: |
-          flake8 services/
-          bandit -r services/
-          pytest services/notification-service/tests --cov
-          pytest services/user-preference-service/tests --cov
-          pytest services/workers-service/tests --cov
+
+      - name: Run Flake8
+        run: flake8 services/
+
+      - name: Run Bandit (security linter)
+        run: bandit -r services/
+
+      - name: Run Notification Service Tests
+        run: |
+          pytest \
+            --cov=services/notification-service/app \
+            --cov-report=term \
+            services/notification-service/tests
+
+      - name: Run User Preference Service Tests
+        run: |
+          pytest \
+            --cov=services/user-preference-service/app \
+            --cov-report=term \
+            services/user-preference-service/tests
+
+      - name: Run Workers Service Tests
+        run: |
+          pytest \
+            --cov=services/workers-service/app \
+            --cov-report=term \
+            services/workers-service/tests
+
+      - name: Run Safety (check for known vulnerabilities)
+        run: |
+          safety check --full-report
