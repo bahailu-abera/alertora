@@ -5,7 +5,7 @@ from app.services.notification_service import process_notification
 
 class TestProcessNotification(unittest.TestCase):
     def setUp(self):
-        self.valid_token = "valid_token"
+        self.valid_token = "valid_token"  # nosec: used for test purposes only
         self.valid_client_id = "client_123"
         self.valid_data = {
             "recipient_id": "user@example.com",

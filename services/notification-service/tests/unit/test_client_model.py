@@ -7,7 +7,7 @@ class TestClientModel(unittest.TestCase):
     def setUp(self):
         self.client_id = "1234"
         self.service_name = "TestApp"
-        self.api_token = "securetoken"
+        self.api_token = "securetoken"  # nosec: used for test purposes only
         self.notification_types = [
             {"name": "promo", "description": "Promotions"},
             {"name": "alert", "description": "System alerts"},
