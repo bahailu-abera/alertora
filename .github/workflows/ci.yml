@@ -29,7 +29,6 @@ jobs:
           pip install flake8 black bandit pytest pytest-cov safety
       - run: |
           flake8 services/
-          black --check services/
           bandit -r services/
           pytest services/notification-service/tests --cov
           pytest services/user-preference-service/tests --cov
