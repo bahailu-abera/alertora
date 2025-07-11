@@ -1,0 +1,36 @@
+name: CI Validation
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - release/*
+      - feature/*
+      - hotfix/*
+  pull_request:
+    branches:
+      - main
+      - develop
+      - release/*
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+      - run: |
+          pip install -r services/notification-service/requirements.txt
+          pip install -r services/user-preference-service/requirements.txt
+          pip install -r services/workers-service/requirements.txt
+          pip install flake8 black bandit pytest pytest-cov safety
+      - run: |
+          flake8 services/
+          black --check services/
+          bandit -r services/
+          pytest services/notification-service/tests --cov
+          pytest services/user-preference-service/tests --cov
+          pytest services/workers-service/tests --cov
