@@ -59,7 +59,9 @@ jobs:
             --cov=services/workers-service/app \
             --cov-report=term \
             services/workers-service/tests
-
+      
       - name: Run Safety (check for known vulnerabilities)
+        env:
+            SAFETY_API_KEY: ${{ secrets.SAFETY_API_KEY }}
         run: |
-          safety scan --full-report
+            safety scan --full-report
