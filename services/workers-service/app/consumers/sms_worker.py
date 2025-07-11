@@ -6,5 +6,5 @@ def run():
     consume_kafka_topic(
         topic="sms_notifications",
         group_id="sms_worker_group",
-        handler_func=handle_sms_message
+        handler_func=handle_sms_message,
     )

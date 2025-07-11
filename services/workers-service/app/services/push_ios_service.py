@@ -15,7 +15,7 @@ def handle_push_ios_message(message):
             channel="push_ios",
             content=message["content"],
             status="sent" if success else "failed",
-            retry_count=0
+            retry_count=0,
         )
         log_notification_event(log)
     except Exception as e:

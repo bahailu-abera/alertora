@@ -10,8 +10,8 @@ def create_producer():
     for i in range(retries):
         try:
             producer = KafkaProducer(
-                bootstrap_servers='kafka:9092',
-                value_serializer=lambda v: json.dumps(v).encode('utf-8')
+                bootstrap_servers="kafka:9092",
+                value_serializer=lambda v: json.dumps(v).encode("utf-8"),
             )
             return producer
         except NoBrokersAvailable:

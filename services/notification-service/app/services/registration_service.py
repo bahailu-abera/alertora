@@ -22,16 +22,13 @@ def register_client(data):
     api_token = generate_token()
 
     client = ClientModel(
-            client_id=client_id,
-            service_name=service_name,
-            api_token=api_token,
-            notification_types=notification_types
-        )
-    
+        client_id=client_id,
+        service_name=service_name,
+        api_token=api_token,
+        notification_types=notification_types,
+    )
+
     insert_client_document(client.to_dict())
     cache_auth_token(api_token, client_id)
 
-    return {
-        "client_id": client_id,
-        "api_token": api_token
-    }
+    return {"client_id": client_id, "api_token": api_token}

@@ -6,5 +6,5 @@ def run():
     consume_kafka_topic(
         topic="email_retries",
         group_id="email_retry_worker_group",
-        handler_func=retry_email_message
+        handler_func=retry_email_message,
     )

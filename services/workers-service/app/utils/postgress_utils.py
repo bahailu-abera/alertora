@@ -1,4 +1,3 @@
-import os
 from app.extensions import SessionLocal
 from app.models.notification_log_model import NotificationLog
 
@@ -20,13 +19,19 @@ def log_notification_event(log, session=None):
             session.close()
 
 
-def update_notification_status(log_id, status, increment_retry=False, session=None):
+def update_notification_status(
+    log_id, status, increment_retry=False, session=None
+):
     """
     Updates the status and optionally increments retry_count for a log entry.
     """
     session = session or SessionLocal()
     try:
-        log = session.query(NotificationLog).filter(NotificationLog.id == log_id).first()
+        log = (
+            session.query(NotificationLog)
+            .filter(NotificationLog.id == log_id)
+            .first()
+        )
         if log:
             log.status = status
             if increment_retry:
@@ -46,10 +51,15 @@ def fetch_retry_pending_notifications(max_retries=3, limit=100, session=None):
     """
     session = session or SessionLocal()
     try:
-        return session.query(NotificationLog).filter(
-            NotificationLog.status == "retry_pending",
-            NotificationLog.retry_count < max_retries
-        ).limit(limit).all()
+        return (
+            session.query(NotificationLog)
+            .filter(
+                NotificationLog.status == "retry_pending",
+                NotificationLog.retry_count < max_retries,
+            )
+            .limit(limit)
+            .all()
+        )
     except Exception:
         raise
     finally:

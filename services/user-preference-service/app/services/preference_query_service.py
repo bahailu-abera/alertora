@@ -16,7 +16,6 @@ def get_user_preference(user_id, client_id):
     if not prefs:
         return {"message": "No preferences set for this client."}, 404
 
-
     cache_user_preference(user_id, client_id, str(prefs))
 
     return {"preferences": prefs}, 200

@@ -6,5 +6,5 @@ def run():
     consume_kafka_topic(
         topic="email_notifications",
         group_id="email_worker_group",
-        handler_func=handle_email_message
+        handler_func=handle_email_message,
     )

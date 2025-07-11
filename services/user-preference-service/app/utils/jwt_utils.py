@@ -12,7 +12,7 @@ def generate_preference_update_token(user_id, client_id):
     payload = {
         "sub": user_id,
         "client_id": client_id,
-        "exp": datetime.now() + timedelta(minutes=EXPIRATION_MINUTES)
+        "exp": datetime.now() + timedelta(minutes=EXPIRATION_MINUTES),
     }
     token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
     return token
