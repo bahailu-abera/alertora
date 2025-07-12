@@ -18,21 +18,27 @@ for domain in $DOMAINS; do
 		rm -rf "/etc/letsencrypt/live/$domain"
 		rm -rf "/etc/letsencrypt/archive/$domain"
 		rm -f "/etc/letsencrypt/renewal/$domain.conf"
+		echo "No existing certificate found: $domain."
+		# Obtain or renew real certificate
+		echo "Attempting to obtain/renew real certificates with Certbot... : $domain"
+		certbot certonly --webroot -w /var/www/certbot \
+		--email "$EMAIL" --agree-tos --no-eff-email \
+		-d "$domain" \
+		--force-renewal
+		echo "Certificate process completed! : $domain"
 	  else
 		echo "Found legitimate certificate, no action needed : $domain"
 	  fi
 	else
 	  echo "No existing certificate found: $domain."
-	fi
-
-	# Obtain or renew real certificate
-	echo "Attempting to obtain/renew real certificates with Certbot... : $domain"
-	certbot certonly --webroot -w /var/www/certbot \
+	  # Obtain or renew real certificate
+	  echo "Attempting to obtain/renew real certificates with Certbot... : $domain"
+	  certbot certonly --webroot -w /var/www/certbot \
 	  --email "$EMAIL" --agree-tos --no-eff-email \
 	  -d "$domain" \
 	  --force-renewal
-
-	echo "Certificate process completed! : $domain"
+	  echo "Certificate process completed! : $domain"
+	fi
 done
 echo "Please reload Nginx to apply new certificates:"
 echo "docker-compose exec nginx nginx -s reload"
