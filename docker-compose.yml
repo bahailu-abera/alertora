@@ -35,8 +35,7 @@ services:
       - alertora-network
 
   notification-service:
-    build:
-      context: ./services/notification-service
+    image: 890742563855.dkr.ecr.eu-north-1.amazonaws.com/alertora-staging/notification-service:latest
     container_name: notification-service
     depends_on:
       - redis
@@ -52,8 +51,7 @@ services:
       - alertora-network
 
   user-preference-service:
-    build:
-      context: ./services/user-preference-service
+    image: 890742563855.dkr.ecr.eu-north-1.amazonaws.com/alertora-staging/user-preference-service:latest
     container_name: user-preference-service
     depends_on:
       - redis
@@ -69,8 +67,7 @@ services:
 
   # ---------- WORKERS ----------
   email-worker:
-    build:
-      context: ./services/workers-service
+    image: 890742563855.dkr.ecr.eu-north-1.amazonaws.com/alertora-staging/workers-service:latest
     command: ["sh", "-c", "sleep 15 && python run.py email"]
     depends_on:
       - kafka
