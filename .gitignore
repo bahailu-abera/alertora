@@ -195,3 +195,4 @@ cython_debug/
 .env*
 certs*
 docker-compose.test.yml
+docker-compose.local.yml
