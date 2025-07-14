@@ -1,15 +1,16 @@
 #!/bin/bash
 set -e
 
-# Load environment variables from .env file if it exists
-if [ -f ".env" ]; then
-  export $(grep -v '^#' .env | xargs)
-fi
 
 cd /home/epic-user/realtime-backend/alertora || {
   echo "Directory not found!"
   exit 1
 }
+
+if [ -f ".env" ]; then
+  export ENV=$(grep '^ENV=' .env | cut -d '=' -f2- | tr -d '"')
+fi
+
 
 # Determine environment and copy appropriate nginx config
 if [[ "$ENV" == "staging" ]]; then
