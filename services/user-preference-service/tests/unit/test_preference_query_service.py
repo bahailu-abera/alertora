@@ -1,14 +1,17 @@
 import unittest
 from unittest.mock import patch
 from app.services.preference_query_service import get_user_preference
+import json
 
 
 class TestPreferenceQueryService(unittest.TestCase):
     @patch("app.services.preference_query_service.get_cached_user_preference")
     def test_preference_from_cache(self, mock_cache):
-        mock_cache.return_value = (
-            "{'channels': ['email'], 'allowed_types': ['promo']}"
-        )
+        mock_cache.return_value = json.dumps({
+            "channels": ["email"],
+            "allowed_types": ["promo"]
+        })
+
         resp, code = get_user_preference("user1", "client1")
         self.assertEqual(code, 200)
         self.assertIn("preferences", resp)
