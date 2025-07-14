@@ -1,6 +1,11 @@
 #!/bin/bash
 set -e
 
+# Load environment variables from .env file if it exists
+if [ -f ".env" ]; then
+  export $(grep -v '^#' .env | xargs)
+fi
+
 cd /home/epic-user/realtime-backend/alertora || {
   echo "Directory not found!"
   exit 1
@@ -12,7 +17,7 @@ if [[ "$ENV" == "staging" ]]; then
   cp nginx/nginx.staging.conf nginx/nginx.conf
 else
   echo "Detected production environment. Using nginx.production.conf"
-  cp nginx/nginx.production.conf nginx/nginx.conf
+  cp nginx/nginx.prod.conf nginx/nginx.conf
 fi
 
 echo "Logging into AWS ECR..."
