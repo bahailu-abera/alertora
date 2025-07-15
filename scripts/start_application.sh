@@ -25,6 +25,24 @@ echo "Logging into AWS ECR..."
 sudo snap install aws-cli --classic || true
 aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin 890742563855.dkr.ecr.eu-north-1.amazonaws.com
 
+# List of business logic services to pull
+SERVICES=(
+  notification-service
+  user-preference-service
+  email-worker
+  sms-worker
+  push-android-worker
+  push-ios-worker
+  retry-worker
+  celery-beat
+)
+
+echo "Pulling updated images via docker compose..."
+for SERVICE in "${SERVICES[@]}"; do
+  echo "Pulling image for: $SERVICE"
+  docker compose pull "$SERVICE"
+done
+
 echo "Starting Docker Compose services..."
 docker compose up -d
 
