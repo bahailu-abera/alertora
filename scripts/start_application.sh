@@ -15,15 +15,17 @@ fi
 # Determine environment and copy appropriate nginx config
 if [[ "$ENV" == "staging" ]]; then
   echo "Detected staging environment. Using nginx.staging.conf"
-  cp nginx/nginx.staging.conf nginx/nginx.conf
+  sudo cp nginx/nginx.staging.conf nginx/nginx.conf
+  sudo cp docker-compose.staging.yml docker-compose.yml
 else
   echo "Detected production environment. Using nginx.production.conf"
-  cp nginx/nginx.prod.conf nginx/nginx.conf
+  sudo cp nginx/nginx.prod.conf nginx/nginx.conf
+  sudo cp docker-compose.prod.yml docker-compose.yml
 fi
 
 echo "Logging into AWS ECR..."
 sudo snap install aws-cli --classic || true
-aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin 890742563855.dkr.ecr.eu-north-1.amazonaws.com
+sudo aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin 890742563855.dkr.ecr.eu-north-1.amazonaws.com
 
 # List of business logic services to pull
 SERVICES=(
@@ -35,6 +37,8 @@ SERVICES=(
   push-ios-worker
   retry-worker
   celery-beat
+  nginx
+  certbot
 )
 
 echo "Pulling updated images via docker compose..."
