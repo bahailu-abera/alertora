@@ -5,7 +5,7 @@ from app.utils.postgress_utils import log_notification_event
 def handle_push_android_message(message):
     print("[INFO] Processing Android push message:", message)
 
-    success = True 
+    success = True
 
     try:
         log = NotificationLog(
@@ -15,7 +15,7 @@ def handle_push_android_message(message):
             channel="push_android",
             content=message["content"],
             status="sent" if success else "failed",
-            retry_count=0
+            retry_count=0,
         )
         log_notification_event(log)
     except Exception as e:

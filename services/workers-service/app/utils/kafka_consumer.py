@@ -11,8 +11,8 @@ def consume_kafka_topic(topic, group_id, handler_func):
         topic,
         bootstrap_servers=KAFKA_BOOTSTRAP_SERVERS,
         group_id=group_id,
-        value_deserializer=lambda v: json.loads(v.decode('utf-8')),
-        auto_offset_reset='earliest',
+        value_deserializer=lambda v: json.loads(v.decode("utf-8")),
+        auto_offset_reset="earliest",
         enable_auto_commit=True,
     )
 

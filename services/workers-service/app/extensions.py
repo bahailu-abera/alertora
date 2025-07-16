@@ -5,7 +5,9 @@ from sqlalchemy.ext.declarative import declarative_base
 import os
 
 
-POSTGRES_URI = os.getenv("POSTGRES_URI", "postgresql://postgres:postgres@postgres:5432/alertora")
+POSTGRES_URI = os.getenv(
+    "POSTGRES_URI", "postgresql://postgres:postgres@postgres:5432/alertora"
+)
 
 
 Base = declarative_base()

@@ -15,7 +15,7 @@ def handle_sms_message(message):
             channel="sms",
             content=message["content"],
             status="sent" if success else "failed",
-            retry_count=0
+            retry_count=0,
         )
         log_notification_event(log)
     except Exception as e:

@@ -5,7 +5,9 @@ from app.utils.jwt_utils import generate_preference_update_token
 SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
 GMAIL_ADDRESS = os.getenv("GMAIL_ADDRESS")
 GMAIL_APP_PASSWORD = os.getenv("GMAIL_APP_PASSWORD")
-PREFERENCE_URL_BASE = os.getenv("PREFERENCE_UPDATE_URL", "http://localhost/preferences")
+PREFERENCE_URL_BASE = os.getenv(
+    "PREFERENCE_UPDATE_URL", "http://localhost/preferences"
+)
 
 
 def _append_preference_link(content: str, user_id: str, client_id: str) -> str:
@@ -30,7 +32,7 @@ def send_email_via_sendgrid(to_email, content, user_id=None, client_id=None):
         from_email="noreply@alertora.com",
         to_emails=to_email,
         subject="Alertora Notification",
-        plain_text_content=content
+        plain_text_content=content,
     )
 
     sg = SendGridAPIClient(SENDGRID_API_KEY)
@@ -40,7 +42,9 @@ def send_email_via_sendgrid(to_email, content, user_id=None, client_id=None):
         raise ValueError(f"SendGrid error: {response.status_code}")
 
 
-def send_email_via_gmail(to_email: str, content: str, user_id=None, client_id=None):
+def send_email_via_gmail(
+    to_email: str, content: str, user_id=None, client_id=None
+):
     from email.message import EmailMessage
     import smtplib
 
@@ -53,12 +57,12 @@ def send_email_via_gmail(to_email: str, content: str, user_id=None, client_id=No
 
     msg = EmailMessage()
     msg.set_content(content)
-    msg['Subject'] = "Alertora Notification"
-    msg['From'] = GMAIL_ADDRESS
-    msg['To'] = to_email
+    msg["Subject"] = "Alertora Notification"
+    msg["From"] = GMAIL_ADDRESS
+    msg["To"] = to_email
 
     try:
-        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
             smtp.login(GMAIL_ADDRESS, GMAIL_APP_PASSWORD)
             smtp.send_message(msg)
     except Exception as e:

@@ -5,7 +5,7 @@ from app.extensions import Base
 
 
 class NotificationLog(Base):
-    __tablename__ = 'notification_logs'
+    __tablename__ = "notification_logs"
 
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     client_id = Column(String, nullable=False)

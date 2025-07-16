@@ -35,8 +35,7 @@ services:
       - alertora-network
 
   notification-service:
-    build:
-      context: ./services/notification-service
+    image: 890742563855.dkr.ecr.eu-north-1.amazonaws.com/alertora-staging/notification-service:latest
     container_name: notification-service
     depends_on:
       - redis
@@ -52,8 +51,7 @@ services:
       - alertora-network
 
   user-preference-service:
-    build:
-      context: ./services/user-preference-service
+    image: 890742563855.dkr.ecr.eu-north-1.amazonaws.com/alertora-staging/user-preference-service:latest
     container_name: user-preference-service
     depends_on:
       - redis
@@ -69,8 +67,7 @@ services:
 
   # ---------- WORKERS ----------
   email-worker:
-    build:
-      context: ./services/workers-service
+    image: 890742563855.dkr.ecr.eu-north-1.amazonaws.com/alertora-staging/workers-service:latest
     command: ["sh", "-c", "sleep 15 && python run.py email"]
     depends_on:
       - kafka
@@ -86,8 +83,7 @@ services:
       - alertora-network
 
   sms-worker:
-    build:
-      context: ./services/workers-service
+    image: 890742563855.dkr.ecr.eu-north-1.amazonaws.com/alertora-staging/sms-worker
     command: ["sh", "-c", "sleep 15 && python run.py sms"]
     depends_on:
       - kafka
@@ -98,8 +94,7 @@ services:
       - alertora-network
 
   push-android-worker:
-    build:
-      context: ./services/workers-service
+    image: 890742563855.dkr.ecr.eu-north-1.amazonaws.com/alertora-staging/push-android-worker
     command: ["sh", "-c", "sleep 15 && python run.py push_android"]
     depends_on:
       - kafka
@@ -110,8 +105,7 @@ services:
       - alertora-network
 
   push-ios-worker:
-    build:
-      context: ./services/workers-service
+    image: 890742563855.dkr.ecr.eu-north-1.amazonaws.com/alertora-staging/push-ios-worker
     command: ["sh", "-c", "sleep 15 && python run.py push_ios"]
     depends_on:
       - kafka
@@ -123,8 +117,7 @@ services:
 
   # ---------- CELERY RETRY WORKER ----------
   retry-worker:
-    build:
-      context: ./services/workers-service
+    image: 890742563855.dkr.ecr.eu-north-1.amazonaws.com/alertora-staging/retry-worker
     command: ["celery", "--app", "app.celery_app", "worker", "--loglevel=info", "--concurrency=1"]
     environment:
       - CELERY_BROKER_URL=${CELERY_BROKER_URL}
@@ -142,8 +135,7 @@ services:
       - postgres
 
   celery-beat:
-    build:
-      context: ./services/workers-service
+    image: 890742563855.dkr.ecr.eu-north-1.amazonaws.com/alertora-staging/celery-beat
     command: ["celery", "--app", "app.celery_app", "beat", "--loglevel=info"]
     environment:
       - CELERY_BROKER_URL=${CELERY_BROKER_URL}
