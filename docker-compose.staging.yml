@@ -1,0 +1,221 @@
+services:
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./certs:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+      - ./nginx/init.sh:/init.sh
+    environment:
+      - DOMAIN=${DOMAIN}
+    entrypoint: ["/bin/sh", "/init.sh"]
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - notification-service
+      - user-preference-service
+    networks:
+      - alertora-network
+  certbot:
+    image: certbot/certbot
+    container_name: certbot
+    volumes:
+      - ./certs:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+      - ./nginx/certbot-init.sh:/certbot-init.sh
+    environment:
+      - DOMAIN=${DOMAIN}
+      - EMAIL=${EMAIL}
+    entrypoint: ["/bin/sh", "/certbot-init.sh"]
+    depends_on:
+      - nginx
+    networks:
+      - alertora-network
+
+  notification-service:
+    image: 890742563855.dkr.ecr.eu-north-1.amazonaws.com/alertora-staging/notification-service:latest
+    container_name: notification-service
+    depends_on:
+      - redis
+      - mongodb
+      - kafka
+    environment:
+      - FLASK_ENV=development
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - MONGO_URI=${MONGO_URI}
+      - KAFKA_BOOTSTRAP_SERVERS=${KAFKA_BOOTSTRAP_SERVERS}
+    networks:
+      - alertora-network
+
+  user-preference-service:
+    image: 890742563855.dkr.ecr.eu-north-1.amazonaws.com/alertora-staging/user-preference-service:latest
+    container_name: user-preference-service
+    depends_on:
+      - redis
+      - mongodb
+    environment:
+      - FLASK_ENV=development
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - MONGO_URI=${MONGO_URI}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+    networks:
+      - alertora-network
+
+  # ---------- WORKERS ----------
+  email-worker:
+    image: 890742563855.dkr.ecr.eu-north-1.amazonaws.com/alertora-staging/workers-service:latest
+    command: ["sh", "-c", "sleep 15 && python run.py email"]
+    depends_on:
+      - kafka
+      - postgres
+    environment:
+      - SENDGRID_API_KEY=${SENDGRID_API_KEY}
+      - GMAIL_ADDRESS=${GMAIL_ADDRESS}
+      - GMAIL_APP_PASSWORD=${GMAIL_APP_PASSWORD}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - PREFERENCE_UPDATE_URL=${PREFERENCE_UPDATE_URL}
+
+    networks:
+      - alertora-network
+
+  sms-worker:
+    image: 890742563855.dkr.ecr.eu-north-1.amazonaws.com/alertora-staging/sms-worker
+    command: ["sh", "-c", "sleep 15 && python run.py sms"]
+    depends_on:
+      - kafka
+      - postgres
+    environment:
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+    networks:
+      - alertora-network
+
+  push-android-worker:
+    image: 890742563855.dkr.ecr.eu-north-1.amazonaws.com/alertora-staging/push-android-worker
+    command: ["sh", "-c", "sleep 15 && python run.py push_android"]
+    depends_on:
+      - kafka
+      - postgres
+    environment:
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+    networks:
+      - alertora-network
+
+  push-ios-worker:
+    image: 890742563855.dkr.ecr.eu-north-1.amazonaws.com/alertora-staging/push-ios-worker
+    command: ["sh", "-c", "sleep 15 && python run.py push_ios"]
+    depends_on:
+      - kafka
+      - postgres
+    environment:
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+    networks:
+      - alertora-network
+
+  # ---------- CELERY RETRY WORKER ----------
+  retry-worker:
+    image: 890742563855.dkr.ecr.eu-north-1.amazonaws.com/alertora-staging/retry-worker
+    command: ["celery", "--app", "app.celery_app", "worker", "--loglevel=info", "--concurrency=1"]
+    environment:
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL}
+      - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND}
+      - MAX_RETRIES=${MAX_RETRIES}
+      - SENDGRID_API_KEY=${SENDGRID_API_KEY}
+      - GMAIL_ADDRESS=${GMAIL_ADDRESS}
+      - GMAIL_APP_PASSWORD=${GMAIL_APP_PASSWORD}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - PREFERENCE_UPDATE_URL=${PREFERENCE_UPDATE_URL}
+    networks:
+      - alertora-network
+    depends_on:
+      - redis
+      - postgres
+
+  celery-beat:
+    image: 890742563855.dkr.ecr.eu-north-1.amazonaws.com/alertora-staging/celery-beat
+    command: ["celery", "--app", "app.celery_app", "beat", "--loglevel=info"]
+    environment:
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL}
+      - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND}
+      - MAX_RETRIES=${MAX_RETRIES}
+    depends_on:
+      - redis
+      - retry-worker
+    networks:
+      - alertora-network
+
+
+  # ---------- REDIS ----------
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    networks:
+      - alertora-network
+
+  # ---------- POSTGRES ----------
+  postgres:
+    image: postgres:14
+    container_name: postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    networks:
+      - alertora-network
+
+  # ---------- MONGODB ----------
+  mongodb:
+    image: mongo:6
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - alertora-network
+
+  # ---------- KAFKA ----------
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: ${ZOOKEEPER_CLIENT_PORT}
+      ZOOKEEPER_TICK_TIME: ${ZOOKEEPER_TICK_TIME}
+    volumes:
+      - zookeeper_data:/var/lib/zookeeper/data
+    networks:
+      - alertora-network
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: ${KAFKA_BROKER_ID}
+      KAFKA_ZOOKEEPER_CONNECT: ${KAFKA_ZOOKEEPER_CONNECT}
+      KAFKA_ADVERTISED_LISTENERS: ${KAFKA_ADVERTISED_LISTENERS}
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: ${KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR}
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    networks:
+      - alertora-network
+
+volumes:
+  mongo_data:
+  zookeeper_data:
+  kafka_data:
+  pg_data:
+  certs:
+  certbot-www:
+
+networks:
+  alertora-network:
+    driver: bridge

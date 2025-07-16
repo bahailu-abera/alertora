@@ -16,9 +16,11 @@ fi
 if [[ "$ENV" == "staging" ]]; then
   echo "Detected staging environment. Using nginx.staging.conf"
   cp nginx/nginx.staging.conf nginx/nginx.conf
+  cp docker-compose.staging.yml docker-compose.yml
 else
   echo "Detected production environment. Using nginx.production.conf"
   cp nginx/nginx.prod.conf nginx/nginx.conf
+  cp docker-compose.prod.yml docker-compose.yml
 fi
 
 echo "Logging into AWS ECR..."
@@ -35,6 +37,8 @@ SERVICES=(
   push-ios-worker
   retry-worker
   celery-beat
+  nginx
+  certbot
 )
 
 echo "Pulling updated images via docker compose..."
