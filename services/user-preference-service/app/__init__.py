@@ -19,7 +19,6 @@ def create_app():
 
     CORS(app, origins=["https://alertora.addisalem.xyz"])
 
-
     from app import extensions
 
     extensions.mongo_database = PyMongo(app).cx["alertora"]
