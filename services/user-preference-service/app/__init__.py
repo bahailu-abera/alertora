@@ -1,5 +1,6 @@
 from flask import Flask
 from flask_pymongo import PyMongo
+from flask_cors import CORS
 from flask_redis import FlaskRedis
 from .config import Config
 import os
@@ -15,6 +16,8 @@ def create_app():
     )
 
     app.config.from_object(Config)
+
+    CORS(app, origins=["https://alertora.addisalem.xyz"])
 
     from app import extensions
 
