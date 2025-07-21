@@ -4,10 +4,8 @@
 
 ---
 
-🎥 **Project Demo:** [Watch the demo here](https://www.awesomescreenshot.com/video/41692293?key=24aa6ec597f55358125c85e7e8575927)  
+🎥 **Frontend Repo:** [https://github.com/bahailu-abera/alertora-frontend](https://github.com/bahailu-abera/alertora-frontend)
 🚀 **Deployed URL:** [https://alertora.addisalem.xyz](https://alertora.addisalem.xyz/)
-
-  **Frontend Repo:** [https://github.com/bahailu-abera/alertora-frontend](https://github.com/bahailu-abera/alertora-frontend)
 
 ---
 
