@@ -1,237 +1,205 @@
-#  Alertora Notification Delivery System
+# Alertora
 
-**Alertora** is a distributed, scalable notification delivery system that enables applications to send real-time alerts via **Email**, **SMS**, and **Push** channels. It respects user preferences and supports retries, delivery logging, and multi-channel queuing.
+**Alertora** is a scalable, self-hostable notification delivery system for sending notifications via email, SMS, and push channels. It supports user preferences, asynchronous delivery, and multi-client registration.
 
----
+## Features
 
-🎥 **Frontend Repo:** [https://github.com/bahailu-abera/alertora-frontend](https://github.com/bahailu-abera/alertora-frontend)
-🚀 **Deployed URL:** [https://alertora.addisalem.xyz](https://alertora.addisalem.xyz/)
+- Client registration with custom notification types
+- Send notifications via API
+- Per-user notification preferences
+- Asynchronous delivery using Celery workers
+- Modular and extensible architecture
 
----
+## Frontend
 
-## 🧭 Project Overview
+- Deployed Site: [https://alertora.addisalem.xyz](https://alertora.addisalem.xyz)
+- Repository: [https://github.com/bahailu-abera/alertora-frontend](https://github.com/bahailu-abera/alertora-frontend)
 
-Alertora is designed to be:
+## Deployment (Self-Hosting)
 
-- ✅ **Modular** — Each service handles a single responsibility.
-- ⚙️ **Scalable** — Uses Kafka queues and stateless workers.
-- 📬 **Flexible** — Pluggable provider support (SendGrid, Gmail, Twilio, FCM).
-- 🔐 **Preference-Aware** — Users control which messages they receive.
+### Requirements
 
----
+- Docker and Docker Compose
+- SMTP credentials for sending emails
+- (Optional) Domain name for production use
 
-## 🏗️ Architecture Overview (Data Flow)
+### Steps
 
-1. Client sends request to `POST /notify` on the **Notification Service**.
-2. Notification Service performs auth, validates request, checks preferences.
-3. Message is published to the appropriate **Kafka topic** (email/sms/push).
-4. A **Worker** consumes the message and sends it using the selected provider.
-5. Result (success/failure) is logged in **PostgreSQL**.
-6. Retries are handled by periodic **Celery tasks**.
+1. Clone the repository
+2. Create a `.env` file with required environment variables(see below)
+3. Run `docker-compose up -d --build`
 
----
+```.env
+# Environment configuration
+# Use staging for staging env
+ENV=staging
 
-## 🧩 Component Responsibilities
+# Use production for production env
+# ENV=production
 
-### 🔹 Notification Service (`services/notification-service`)
-- Exposes:
-  - `POST /register`: Register a new client.
-  - `POST /notify`: Send a notification.
-- Handles:
-  - API token authentication
-  - Request validation
-  - User preference check
-  - Enqueues messages to Kafka by channel
+# Base URL of your hosted instance (e.g., https://yourdomain.com)
+BASE_URL=https://yourdomain.com
 
-### 🔹 User Preference Service (`services/user-preference-service`)
-- Exposes:
-  - `GET /preferences`: Get user preferences
-  - `POST /preferences`: Update user preferences
-- Stores preferences in MongoDB
-- Caches preferences in Redis
+# Domain names for API and Preference services (use your custom domains)
+DOMAIN=api.yourdomain.com prefs.yourdomain.com
 
-### 🔹 Worker Service (`services/workers-service`)
-- Kafka consumers for each channel:
-  - `email_worker`, `sms_worker`, `push_worker`
-- Sends messages via pluggable providers:
-  - Email: SendGrid or Gmail
-  - SMS: Twilio
-  - Push: FCM/APNs
-- Logs delivery status to PostgreSQL
-- Handles retries and status updates
+# Email address used to send outgoing messages
+EMAIL=no-reply@yourdomain.com
 
----
+# Endpoint where user preferences can be updated
+PREFERENCE_UPDATE_URL=https://prefs.yourdomain.com/preferences
 
-## 🔐 Authentication
+# Gmail address (if using Gmail SMTP)
+GMAIL_ADDRESS=your_email@gmail.com
 
-Clients authenticate using an `api_token` obtained during registration.  
-Each request to `/notify` must include:
-
-```
-Authorization: Bearer <api_token>
-```
-
----
-
-## 🚀 API Documentation
-
-### 1. `POST /register`
-
-Register a new client application.
-
-#### Request
-
-```json
-{
-  "service_name": "MyApp",
-  "notification_types": [
-    {"name": "promo", "description": "Promotional offers"},
-    {"name": "security_alert", "description": "Security-related notifications"}
-  ]
-}
-```
-
-#### Response
-
-```json
-{
-  "client_id": "uuid-string",
-  "api_token": "secure-token"
-}
-```
-
----
-
-### 2. `POST /notify`
-
-Send a notification.
-
-#### Headers
-
-```
-Authorization: Bearer <api_token>
-Content-Type: application/json
-```
-
-#### Request
-
-```json
-{
-  "recipient_id": "user@example.com",
-  "notification_type": "promo",
-  "channel": "email",
-  "content": "🔥 Big Sale starts now!"
-}
-```
-
-#### Response
-
-```json
-{
-  "message": "Notification accepted"
-}
-```
-
-#### Error Cases
-
-| Code | Message                             |
-|------|-------------------------------------|
-| 400  | Missing JSON body                   |
-| 401  | Unauthorized                        |
-| 403  | User preference rejected            |
-| 502  | Failed to fetch user preferences    |
-
----
-
-## 🛠️ Setup Instructions
-
-### 📁 Prerequisites
-
-- Docker & Docker Compose
-- `.env` file with the following:
-
-```env
-BASE_URL=https://alertora.example.xyz
-
-DOMAIN=api.alertora.example.xyz prefs.alertora.example.xyz
-EMAIL=your_email@example.com
-PREFERENCE_UPDATE_URL=https://prefs.alertora.example.xyz/preferences
-
-GMAIL_ADDRESS=your_email_username
-
-# Redis
+# Redis configuration
 REDIS_HOST=redis
 REDIS_PORT=6379
 
-# MongoDB
+# MongoDB configuration
 MONGO_URI=mongodb://mongodb:27017
 
-# Kafka
+# Kafka broker address
 KAFKA_BOOTSTRAP_SERVERS=kafka:9092
 
-# JWT
-JWT_SECRET_KEY=your_very_secret_jwt_key
+# JWT secret key for signing tokens
+JWT_SECRET_KEY=your_secure_jwt_secret
 
-# Email Providers
-SENDGRID_API_KEY=your-sendgrid-api-key
-MAIL_ADDRESS=your_email@example.com
+# Email provider credentials
+SENDGRID_API_KEY=your_sendgrid_api_key
 GMAIL_APP_PASSWORD=your_gmail_app_password
 
-# Celery Retry
+# Celery configuration for retry logic
 MAX_RETRIES=5
 CELERY_BROKER_URL=redis://redis:6379/1
 CELERY_RESULT_BACKEND=redis://redis:6379/1
 RETRY_INTERVAL_SECONDS=90
 
-# PostgreSQL
+# PostgreSQL configuration
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=postgres
 POSTGRES_DB=alertora
+
+# Zookeeper configuration for Kafka
+ZOOKEEPER_CLIENT_PORT=2181
+ZOOKEEPER_TICK_TIME=2000
+
+# Kafka broker settings
+KAFKA_BROKER_ID=1
+KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
 ```
 
-### ▶️ Start the System
+## API Usage
 
+### Register a Client
+
+#### Bash
 ```bash
-docker-compose up --build
+curl -X POST https://api.alertora.addisalem.xyz/api/v1/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "service_name": "company_b",
+    "notification_types": [
+      {"name": "reminder", "description": "Reminders for tasks and events"},
+      {"name": "feature_release", "description": "New feature announcements"},
+      {"name": "promo", "description": "Sales and marketing messages"}
+    ]
+  }'
 ```
 
----
+#### Python
+```python
+import requests
 
-## 📦 Sending a Test Notification
+url = "https://api.alertora.addisalem.xyz/api/v1/register"
+data = {
+    "service_name": "company_b",
+    "notification_types": [
+        {"name": "reminder", "description": "Reminders for tasks and events"},
+        {"name": "feature_release", "description": "New feature announcements"},
+        {"name": "promo", "description": "Sales and marketing messages"}
+    ]
+}
+headers = {"Content-Type": "application/json"}
+response = requests.post(url, json=data, headers=headers)
+print(response.json())
+```
 
+#### JavaScript
+```javascript
+fetch("https://api.alertora.addisalem.xyz/api/v1/register", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    service_name: "company_b",
+    notification_types: [
+      { name: "reminder", description: "Reminders for tasks and events" },
+      { name: "feature_release", description: "New feature announcements" },
+      { name: "promo", description: "Sales and marketing messages" }
+    ]
+  })
+})
+  .then(res => res.json())
+  .then(console.log);
+```
+
+### Send a Notification
+
+#### Bash
 ```bash
-# Register a client
-curl -X POST https://api.alertora.example.xyz/api/v1/register   -H "Content-Type: application/json"   -d '{
-        "service_name": "company_b",
-       "notification_types": [
-          {"name": "reminder", "description": "Reminders for tasks and events"},
-          {"name": "feature_release", "description": "New feature announcements"},
-          {"name": "promo", "description": "Sales and marketing messages"}
-        ]
-      }'
-
-# Send notification
-curl  -X POST https://api.alertora.example.xyz/api/v1/notify   -H "Authorization: Bearer <api_token>"   -H "Content-Type: application/json"   -d '{
-        "recipient_id": "hello@example.com",
-        "notification_type": "feature_release",
-        "channel": "email",
-        "content": "🚀 New feature: Dark mode is now available!"
-      }'
+curl -X POST https://api.alertora.addisalem.xyz/api/v1/notify \
+  -H "Authorization: Bearer <api_token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "recipient_id": "hello@addisalem.com",
+    "notification_type": "feature_release",
+    "channel": "email",
+    "content": "New feature: Dark mode is now available!"
+  }'
 ```
 
----
+#### Python
+```python
+import requests
 
-## ⚙️ Folder Structure Overview
-
+url = "https://api.alertora.addisalem.xyz/api/v1/notify"
+data = {
+    "recipient_id": "hello@addisalem.com",
+    "notification_type": "feature_release",
+    "channel": "email",
+    "content": "New feature: Dark mode is now available!"
+}
+headers = {
+    "Authorization": "Bearer <api_token>",
+    "Content-Type": "application/json"
+}
+response = requests.post(url, json=data, headers=headers)
+print(response.json())
 ```
-services/
-├── notification-service       # API gateway
-├── user-preference-service    # MongoDB + Redis for preferences
-└── workers-service            # Kafka consumers + delivery logging
+
+#### JavaScript
+```javascript
+fetch("https://api.alertora.addisalem.xyz/api/v1/notify", {
+  method: "POST",
+  headers: {
+    "Authorization": "Bearer <api_token>",
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    recipient_id: "hello@addisalem.com",
+    notification_type: "feature_release",
+    channel: "email",
+    content: "New feature: Dark mode is now available!"
+  })
+})
+  .then(res => res.json())
+  .then(console.log);
 ```
 
-- Kafka topics separate concerns by channel
-- PostgreSQL stores delivery logs
-- MongoDB stores client & user settings
+## Features Under Development
 
----
+- Third-party email provider integration (e.g., SendGrid, Mailgun)
+- SMS and push notification channel support
+- Admin dashboard for managing clients and notifications
