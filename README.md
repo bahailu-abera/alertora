@@ -26,70 +26,8 @@
 ### Steps
 
 1. Clone the repository
-2. Create a `.env` file with required environment variables(see below)
+2. Create a `.env` file with required environment variables(see .env.example file)
 3. Run `docker-compose up -d --build`
-
-```.env
-# Environment configuration
-# Use staging for staging env
-ENV=staging
-
-# Use production for production env
-# ENV=production
-
-# Base URL of your hosted instance (e.g., https://yourdomain.com)
-BASE_URL=https://yourdomain.com
-
-# Domain names for API and Preference services (use your custom domains)
-DOMAIN=api.yourdomain.com prefs.yourdomain.com
-
-# Email address used to send outgoing messages
-EMAIL=no-reply@yourdomain.com
-
-# Endpoint where user preferences can be updated
-PREFERENCE_UPDATE_URL=https://prefs.yourdomain.com/preferences
-
-# Gmail address (if using Gmail SMTP)
-GMAIL_ADDRESS=your_email@gmail.com
-
-# Redis configuration
-REDIS_HOST=redis
-REDIS_PORT=6379
-
-# MongoDB configuration
-MONGO_URI=mongodb://mongodb:27017
-
-# Kafka broker address
-KAFKA_BOOTSTRAP_SERVERS=kafka:9092
-
-# JWT secret key for signing tokens
-JWT_SECRET_KEY=your_secure_jwt_secret
-
-# Email provider credentials
-SENDGRID_API_KEY=your_sendgrid_api_key
-GMAIL_APP_PASSWORD=your_gmail_app_password
-
-# Celery configuration for retry logic
-MAX_RETRIES=5
-CELERY_BROKER_URL=redis://redis:6379/1
-CELERY_RESULT_BACKEND=redis://redis:6379/1
-RETRY_INTERVAL_SECONDS=90
-
-# PostgreSQL configuration
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=postgres
-POSTGRES_DB=alertora
-
-# Zookeeper configuration for Kafka
-ZOOKEEPER_CLIENT_PORT=2181
-ZOOKEEPER_TICK_TIME=2000
-
-# Kafka broker settings
-KAFKA_BROKER_ID=1
-KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
-KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
-KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
-```
 
 ## API Usage
 
